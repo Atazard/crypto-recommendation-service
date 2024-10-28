@@ -126,7 +126,7 @@ class CryptoTest {
     }
 
     @Test
-    void TestLatestEntryInRange() {
+    void testLatestEntryInRange() {
         Optional<Map.Entry<Timestamp, BigDecimal>> latestEntryInRange = crypto.latestEntryInRange("1", "2");
         assertFalse(latestEntryInRange.isPresent());
 
@@ -158,5 +158,174 @@ class CryptoTest {
         assertTrue(latestEntryInRange.isPresent());
         assertEquals(expectedTimestamp, latestEntryInRange.get().getKey());
         assertEquals(expectedValue, latestEntryInRange.get().getValue());
+    }
+
+    @Test
+    void testMinPriceEntry() {
+        Optional<Map.Entry<Timestamp, BigDecimal>> minPriceEntry = crypto.minPriceEntry();
+        assertFalse(minPriceEntry.isPresent());
+
+        crypto.addEntryInHistory("1", "1.1");
+
+        Timestamp expectedTimestamp = new Timestamp(1);
+        BigDecimal expectedValue = new BigDecimal("1.1");
+
+        minPriceEntry = crypto.minPriceEntry();
+        assertTrue(minPriceEntry.isPresent());
+        assertEquals(expectedTimestamp, minPriceEntry.get().getKey());
+        assertEquals(expectedValue, minPriceEntry.get().getValue());
+
+        crypto.addEntryInHistory("2", "2.2");
+        crypto.addEntryInHistory("3", "3.3");
+
+        minPriceEntry = crypto.minPriceEntry();
+        assertTrue(minPriceEntry.isPresent());
+        assertEquals(expectedTimestamp, minPriceEntry.get().getKey());
+        assertEquals(expectedValue, minPriceEntry.get().getValue());
+    }
+
+    @Test
+    void testMinPriceEntryInRange() {
+        Optional<Map.Entry<Timestamp, BigDecimal>> minPriceEntryInRange = crypto.minPriceEntryInRange("1", "2");
+        assertFalse(minPriceEntryInRange.isPresent());
+
+        crypto.addEntryInHistory("1", "1.1");
+
+        Timestamp expectedTimestamp = new Timestamp(1);
+        BigDecimal expectedValue = new BigDecimal("1.1");
+
+        minPriceEntryInRange = crypto.minPriceEntryInRange(expectedTimestamp, expectedTimestamp);
+        assertTrue(minPriceEntryInRange.isPresent());
+        assertEquals(expectedTimestamp, minPriceEntryInRange.get().getKey());
+        assertEquals(expectedValue, minPriceEntryInRange.get().getValue());
+
+        minPriceEntryInRange = crypto.minPriceEntryInRange("2", "1");
+        assertFalse(minPriceEntryInRange.isPresent());
+
+        crypto.addEntryInHistory("2", "2.2");
+        crypto.addEntryInHistory("3", "3.3");
+
+        expectedTimestamp = new Timestamp(2);
+        expectedValue = new BigDecimal("2.2");
+
+        minPriceEntryInRange = crypto.minPriceEntryInRange("2", "3");
+        assertTrue(minPriceEntryInRange.isPresent());
+        assertEquals(expectedTimestamp, minPriceEntryInRange.get().getKey());
+        assertEquals(expectedValue, minPriceEntryInRange.get().getValue());
+    }
+
+    @Test
+    void testMaxPriceEntry() {
+        Optional<Map.Entry<Timestamp, BigDecimal>> maxPriceEntry = crypto.minPriceEntry();
+        assertFalse(maxPriceEntry.isPresent());
+
+        crypto.addEntryInHistory("1", "1.1");
+
+        Timestamp expectedTimestamp = new Timestamp(1);
+        BigDecimal expectedValue = new BigDecimal("1.1");
+
+        maxPriceEntry = crypto.maxPriceEntry();
+        assertTrue(maxPriceEntry.isPresent());
+        assertEquals(expectedTimestamp, maxPriceEntry.get().getKey());
+        assertEquals(expectedValue, maxPriceEntry.get().getValue());
+
+        crypto.addEntryInHistory("2", "2.2");
+        crypto.addEntryInHistory("3", "3.3");
+
+        expectedTimestamp = new Timestamp(3);
+        expectedValue = new BigDecimal("3.3");
+
+        maxPriceEntry = crypto.maxPriceEntry();
+        assertTrue(maxPriceEntry.isPresent());
+        assertEquals(expectedTimestamp, maxPriceEntry.get().getKey());
+        assertEquals(expectedValue, maxPriceEntry.get().getValue());
+    }
+
+    @Test
+    void testMaxPriceEntryInRange() {
+        Optional<Map.Entry<Timestamp, BigDecimal>> maxPriceEntryInRange = crypto.minPriceEntryInRange("1", "2");
+        assertFalse(maxPriceEntryInRange.isPresent());
+
+        crypto.addEntryInHistory("1", "1.1");
+
+        Timestamp expectedTimestamp = new Timestamp(1);
+        BigDecimal expectedValue = new BigDecimal("1.1");
+
+        maxPriceEntryInRange = crypto.maxPriceEntryInRange(expectedTimestamp, expectedTimestamp);
+        assertTrue(maxPriceEntryInRange.isPresent());
+        assertEquals(expectedTimestamp, maxPriceEntryInRange.get().getKey());
+        assertEquals(expectedValue, maxPriceEntryInRange.get().getValue());
+
+        maxPriceEntryInRange = crypto.maxPriceEntryInRange("2", "1");
+        assertFalse(maxPriceEntryInRange.isPresent());
+
+        crypto.addEntryInHistory("2", "2.2");
+        crypto.addEntryInHistory("3", "3.3");
+
+        expectedTimestamp = new Timestamp(3);
+        expectedValue = new BigDecimal("3.3");
+
+        maxPriceEntryInRange = crypto.maxPriceEntryInRange("2", "3");
+        assertTrue(maxPriceEntryInRange.isPresent());
+        assertEquals(expectedTimestamp, maxPriceEntryInRange.get().getKey());
+        assertEquals(expectedValue, maxPriceEntryInRange.get().getValue());
+    }
+
+    @Test
+    void testNormalizedRange() {
+        Optional<BigDecimal> normalizedRange = crypto.normalizedRange();
+        assertFalse(normalizedRange.isPresent());
+
+        crypto.addEntryInHistory("0", "0");
+
+        normalizedRange = crypto.normalizedRange();
+        assertFalse(normalizedRange.isPresent());
+
+        crypto = new Crypto("BTC");
+        crypto.addEntryInHistory("1", "1.1");
+
+        BigDecimal expectedValue = BigDecimal.ZERO;
+
+        normalizedRange = crypto.normalizedRange();
+        assertTrue(normalizedRange.isPresent());
+        assertEquals(0, expectedValue.compareTo(normalizedRange.get()));
+
+        crypto.addEntryInHistory("2", "2.2");
+        crypto.addEntryInHistory("3", "3.3");
+
+        expectedValue = new BigDecimal("2");
+
+        normalizedRange = crypto.normalizedRange();
+        assertTrue(normalizedRange.isPresent());
+        assertEquals(0, expectedValue.compareTo(normalizedRange.get()));
+    }
+
+    @Test
+    void testNormalizedRangeInRange() {
+        Optional<BigDecimal> normalizedRange = crypto.normalizedRangeInRange("0", "2");
+        assertFalse(normalizedRange.isPresent());
+
+        crypto.addEntryInHistory("0", "0");
+
+        normalizedRange = crypto.normalizedRangeInRange("0", "2");
+        assertFalse(normalizedRange.isPresent());
+
+        crypto = new Crypto("BTC");
+        crypto.addEntryInHistory("1", "1.1");
+
+        BigDecimal expectedValue = BigDecimal.ZERO;
+
+        normalizedRange = crypto.normalizedRangeInRange("1", "2");
+        assertTrue(normalizedRange.isPresent());
+        assertEquals(0, expectedValue.compareTo(normalizedRange.get()));
+
+        crypto.addEntryInHistory("2", "2.2");
+        crypto.addEntryInHistory("3", "3.3");
+
+        expectedValue = new BigDecimal("0.5");
+
+        normalizedRange = crypto.normalizedRangeInRange("2", "3");
+        assertTrue(normalizedRange.isPresent());
+        assertEquals(0, expectedValue.compareTo(normalizedRange.get()));
     }
 }
