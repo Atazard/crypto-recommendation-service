@@ -20,10 +20,6 @@ class CryptoTest {
         crypto = new Crypto("BTC");
     }
 
-    @AfterEach
-    void tearDown() {
-    }
-
     @Test
     void testAddEntryInHistory() {
         assertEquals(0, crypto.getHistory().size());
